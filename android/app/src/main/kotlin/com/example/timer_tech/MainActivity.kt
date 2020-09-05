@@ -1,5 +1,7 @@
 package com.example.timer_tech
 
+import java.time.LocalDate
+
 import android.os.Bundle
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,40 +15,46 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
 
 
-class MainActivity: FlutterActivity() {
+class MainActivity : FlutterActivity() {
 
-    private val CHANNEL_ID = "timer_tech"
+    private val METHOD_CHANNEL = "timertech.dev/timer"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        createNotificationChannel()
 
+
+        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
+            val date = call.argument<String>("date") ?: "2020-02-02"
+            val min = call.argument<Int>("min") ?: 15
+            when (call.method) {
+                "startTimer" -> startTimer(date, min)
+                "stopTimer" -> stopTimer()
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    private fun startTimer(date: String, min: Int) {
         Intent(this, TimerService::class.java).also { intent ->
+            intent.putExtra("date", date)
+            intent.putExtra("sec", min*60)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(intent)
             } else {
                 startService(intent)
             }
         }
+
     }
 
-    private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "timer_tech"
-            val descriptionText = "timer_tech description"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+    private fun stopTimer() {
+        Intent(this, TimerService::class.java).also { intent ->
+            stopService(intent)
         }
     }
-
 
 }
