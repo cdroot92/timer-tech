@@ -16,7 +16,8 @@ ThemeData themeData(BuildContext context) {
     ),
     backgroundColor: Colors.white,
     iconTheme: IconThemeData(color: kBodyTextColorLight),
-    accentIconTheme: IconThemeData(color: kAccentIconLightColor),
+    floatingActionButtonTheme:
+        FloatingActionButtonThemeData(backgroundColor: kAccentIconLightColor),
     primaryIconTheme: IconThemeData(color: kPrimaryIconLightColor),
     textTheme: GoogleFonts.latoTextTheme().copyWith(
       bodyText1: TextStyle(color: kBodyTextColorLight),
@@ -40,7 +41,8 @@ ThemeData darkThemeData(BuildContext context) {
     ),
     backgroundColor: kBackgroundDarkColor,
     iconTheme: IconThemeData(color: kBodyTextColorDark),
-    accentIconTheme: IconThemeData(color: kAccentIconDarkColor),
+    floatingActionButtonTheme:
+        FloatingActionButtonThemeData(backgroundColor: kAccentIconDarkColor),
     primaryIconTheme: IconThemeData(color: kPrimaryIconDarkColor),
     textTheme: GoogleFonts.latoTextTheme().copyWith(
       bodyText1: TextStyle(color: kBodyTextColorDark),
