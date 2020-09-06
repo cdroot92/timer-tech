@@ -71,7 +71,7 @@ class TimerService : Service() {
                 notiBuilder?.setContentText("date: $date, time: ${getTimerText(sec)}")
                 notiManager?.notify(NOTI_ID, notiBuilder?.build())
             } else {
-                stopSelf()
+                finishTimer()
             }
         }
     }
@@ -85,13 +85,18 @@ class TimerService : Service() {
         sec = 0
     }
 
+    fun finishTimer() {
+        val mainIntent = Intent(applicationContext, MainActivity::class.java).also { intent ->
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, mainIntent, 0)
+        pendingIntent.send()
+        stopSelf()
+    }
+
 
     override fun onDestroy() {
         stopTimer()
-        val mainIntent = Intent(this, MainActivity::class.java).also { intent ->
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        startActivity(mainIntent)
         // vibration for notification
         super.onDestroy()
     }

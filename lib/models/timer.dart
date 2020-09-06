@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class TimerModel extends ChangeNotifier {
   String _date = "2020-08-08";
-  int _min = 3;
+  int _min = 1;
 
   String get date => _date;
   int get min => _min;

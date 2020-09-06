@@ -23,8 +23,6 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
         MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             val date = call.argument<String>("date") ?: "2020-02-02"
             val min = call.argument<Int>("min") ?: 15
