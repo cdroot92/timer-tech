@@ -16,7 +16,7 @@ import io.flutter.plugin.common.MethodChannel
 
 
 class MainActivity : FlutterActivity() {
-
+    /*
     private val METHOD_CHANNEL = "timertech.dev/timer"
 
 
@@ -54,5 +54,5 @@ class MainActivity : FlutterActivity() {
             stopService(intent)
         }
     }
-
+     */
 }
