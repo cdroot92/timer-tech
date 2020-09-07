@@ -13,7 +13,7 @@ class TimerModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeTime(int, min) {
+  void changeMin(int min) {
     _min = min;
     notifyListeners();
   }

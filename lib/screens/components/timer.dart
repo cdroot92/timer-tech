@@ -44,6 +44,18 @@ class _ClockTimerState extends State<ClockTimer> {
             ));
   }
 
+  void runTimer() {
+    timer = Timer.periodic(new Duration(seconds: 1), (Timer t) {
+      if (_sec > 0) {
+        _sec--;
+        sendNoti();
+      } else {
+        // finish
+        finishTimer();
+      }
+    });
+  }
+
   void startTimer(String date, int min) async {
     _date = date;
     _sec = min * 60;
@@ -51,11 +63,55 @@ class _ClockTimerState extends State<ClockTimer> {
     setState(() {
       _runState = 1;
     });
+
     sendNoti();
-    timer = Timer.periodic(new Duration(seconds: 1), (Timer t) {
-      _sec--;
-      sendNoti();
+    runTimer();
+  }
+
+  void resumeTimer() async {
+    setState(() {
+      _runState = 1;
     });
+
+    runTimer();
+  }
+
+  void pauseTimer() async {
+    setState(() {
+      _runState = 2;
+    });
+
+    timer.cancel();
+  }
+
+  void stopTimer(TimerModel m) async {
+    setState(() {
+      _runState = 0;
+      _sec = 0;
+    });
+
+    timer.cancel();
+    _noti.cancelAll();
+
+    m.changeMin(0);
+  }
+
+  void clearTimer(TimerModel m) async {
+    setState(() {
+      _runState = 0;
+      _sec = 0;
+    });
+
+    m.changeMin(0);
+  }
+
+  void finishTimer() async {
+    setState(() {
+      _runState = 0;
+    });
+
+    timer.cancel();
+    _noti.cancelAll();
   }
 
   void sendNoti() async {
@@ -77,15 +133,6 @@ class _ClockTimerState extends State<ClockTimer> {
       platformChannelSpecifics,
       payload: 'Hello Flutter',
     );
-  }
-
-  void stopTimer() async {
-    timer.cancel();
-    _noti.cancelAll();
-
-    setState(() {
-      _runState = 0;
-    });
   }
 
   String getTimerText() {
@@ -112,18 +159,37 @@ class _ClockTimerState extends State<ClockTimer> {
             ),
             Consumer<TimerModel>(builder: (context, timer, build) {
               return Center(
-                  child: FloatingActionButton(
-                onPressed: () {
-                  if (_runState != 0) {
-                    stopTimer();
-                  } else {
-                    startTimer(timer.date, timer.min);
-                  }
-                },
-                tooltip: _runState != 0 ? 'Timer stop' : 'Timer start',
-                child: _runState != 0
-                    ? new Icon(Icons.stop)
-                    : new Icon(Icons.play_arrow),
+                  child: Row(
+                children: [
+                  FloatingActionButton(
+                    onPressed: () {
+                      if (_runState == 1) {
+                        pauseTimer();
+                      } else if (_runState == 0) {
+                        startTimer(timer.date, timer.min);
+                      } else if (_runState == 2) {
+                        resumeTimer();
+                      }
+                    },
+                    tooltip: _runState == 1 ? 'Stop or Pause' : 'Start',
+                    child: _runState == 1
+                        ? new Icon(Icons.pause)
+                        : new Icon(Icons.play_arrow),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      if (_runState == 0) {
+                        clearTimer(timer);
+                      } else {
+                        stopTimer(timer);
+                      }
+                    },
+                    tooltip: _runState == 0 ? 'Clear' : 'Stop',
+                    child: _runState == 0
+                        ? new Icon(Icons.refresh)
+                        : new Icon(Icons.stop),
+                  )
+                ],
               ));
             })
           ],
