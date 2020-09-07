@@ -23,7 +23,7 @@ class _HomeBodyState extends State<HomeBody> {
             height: 80,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [Text("tasks"), Text("timer"), Text("cal")],
+              children: [Text("tasks"), Text("timer"), Text("calendar")],
             ),
           )
         ])));
