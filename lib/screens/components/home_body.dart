@@ -18,7 +18,14 @@ class _HomeBodyState extends State<HomeBody> {
         providers: [ChangeNotifierProvider(create: (context) => EmptyModel())],
         child: Container(
             child: Column(children: [
-          ClockTimer(),
+          Expanded(child: ClockTimer()),
+          Container(
+            height: 80,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [Text("tasks"), Text("timer"), Text("cal")],
+            ),
+          )
         ])));
   }
 }

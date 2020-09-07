@@ -1,12 +1,11 @@
-import 'dart:isolate';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../models/timer.dart';
-import 'timer_painter.dart';
+import '../../models/timer.dart' show TimerModel;
+import 'timer_painter.dart' show TimerPainter;
 
 class ClockTimer extends StatefulWidget {
   @override
@@ -36,12 +35,14 @@ class _ClockTimerState extends State<ClockTimer> {
   }
 
   Future onSelectNotification(String payload) async {
+    /*
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
               title: Text('Notification Payload'),
               content: Text('Payload: $payload'),
             ));
+            */
   }
 
   void runTimer() {
@@ -135,6 +136,8 @@ class _ClockTimerState extends State<ClockTimer> {
     );
   }
 
+  void sendEndingNoti() async {}
+
   String getTimerText() {
     var s = (_sec % 60).floor();
     var min = (_sec / 60.0).floor();
@@ -147,52 +150,51 @@ class _ClockTimerState extends State<ClockTimer> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [ChangeNotifierProvider(create: (context) => TimerModel())],
-        child: Column(
-          children: [
-            Stack(
-              children: [
-                CustomPaint(
-                  painter: TimerPainter(context),
-                ),
-              ],
-            ),
-            Consumer<TimerModel>(builder: (context, timer, build) {
-              return Center(
-                  child: Row(
-                children: [
-                  FloatingActionButton(
-                    onPressed: () {
-                      if (_runState == 1) {
-                        pauseTimer();
-                      } else if (_runState == 0) {
-                        startTimer(timer.date, timer.min);
-                      } else if (_runState == 2) {
-                        resumeTimer();
-                      }
-                    },
-                    tooltip: _runState == 1 ? 'Stop or Pause' : 'Start',
-                    child: _runState == 1
-                        ? new Icon(Icons.pause)
-                        : new Icon(Icons.play_arrow),
-                  ),
-                  FloatingActionButton(
-                    onPressed: () {
-                      if (_runState == 0) {
-                        clearTimer(timer);
-                      } else {
-                        stopTimer(timer);
-                      }
-                    },
-                    tooltip: _runState == 0 ? 'Clear' : 'Stop',
-                    child: _runState == 0
-                        ? new Icon(Icons.refresh)
-                        : new Icon(Icons.stop),
-                  )
-                ],
-              ));
-            })
-          ],
-        ));
+      providers: [ChangeNotifierProvider(create: (context) => TimerModel())],
+      child: Stack(
+        children: [
+          Container(
+            child: CustomPaint(painter: TimerPainter(context)),
+          ),
+          Consumer<TimerModel>(builder: (context, timer, build) {
+            return Container(
+                alignment: Alignment.bottomCenter,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    FloatingActionButton(
+                      onPressed: () {
+                        if (_runState == 1) {
+                          pauseTimer();
+                        } else if (_runState == 0) {
+                          startTimer(timer.date, timer.min);
+                        } else if (_runState == 2) {
+                          resumeTimer();
+                        }
+                      },
+                      tooltip: _runState == 1 ? 'Stop or Pause' : 'Start',
+                      child: _runState == 1
+                          ? new Icon(Icons.pause)
+                          : new Icon(Icons.play_arrow),
+                    ),
+                    FloatingActionButton(
+                      onPressed: () {
+                        if (_runState == 0) {
+                          clearTimer(timer);
+                        } else {
+                          stopTimer(timer);
+                        }
+                      },
+                      tooltip: _runState == 0 ? 'Clear' : 'Stop',
+                      child: _runState == 0
+                          ? new Icon(Icons.refresh)
+                          : new Icon(Icons.stop),
+                    )
+                  ],
+                ));
+          })
+        ],
+      ),
+    );
   }
 }
