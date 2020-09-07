@@ -275,7 +275,7 @@ class _ClockTimerState extends State<ClockTimer> {
           Align(
             alignment: Alignment.topCenter,
             child: Text(
-              _sec != 0 ? "${getTimerText()}" : "",
+              "${getTimerText()}",
               style: TextStyle(fontSize: 35),
             ),
           ),
