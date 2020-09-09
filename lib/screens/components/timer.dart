@@ -1,12 +1,11 @@
-import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timer_tech/models/empty.dart';
 
-import '../../models/timer.dart' show TimerModel;
+import '../../models/timer.dart' show TimerService;
 import 'timer_painter.dart' show TimerPainter;
 
 class ClockTimer extends StatefulWidget {
@@ -15,173 +14,45 @@ class ClockTimer extends StatefulWidget {
 }
 
 class _ClockTimerState extends State<ClockTimer> {
-  FlutterLocalNotificationsPlugin _noti;
-  String chanId = "timer_tech/timer";
-  int timerNotiId = 92;
-  Timer timer;
-
-  int _runState = 0; // 0: stopped, 1: running, 2: paused
-  int _sec = 0;
-  int _hour = 0;
-  String _date = "";
-
   double _x = 0;
   double _y = 0;
   Queue<int> degreeHistory = Queue();
   static const int historyLen = 3;
 
-  void initState() {
-    super.initState();
-    var androidSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
-    var iosSetting = IOSInitializationSettings();
-    var initializationSettings =
-        InitializationSettings(androidSetting, iosSetting);
-
-    _noti = FlutterLocalNotificationsPlugin();
-    _noti.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
-  }
-
-  Future onSelectNotification(String payload) async {}
-
-  void runTimer() {
-    timer = Timer.periodic(new Duration(seconds: 1), (Timer t) {
-      if (_sec > 0) {
-        setState(() {
-          _sec--;
-        });
-        sendNoti();
-      } else {
-        // finish
-        finishTimer();
-      }
-    });
-  }
-
-  void startTimer(String date) async {
-    _date = date;
-
-    setState(() {
-      _runState = 1;
-    });
-
-    sendNoti();
-    runTimer();
-  }
-
-  void resumeTimer() async {
-    setState(() {
-      _runState = 1;
-    });
-
-    runTimer();
-  }
-
-  void pauseTimer() async {
-    setState(() {
-      _runState = 2;
-    });
-
-    timer.cancel();
-  }
-
-  void stopTimer(TimerModel m) async {
-    setState(() {
-      _runState = 0;
-      _sec = 0;
-      _hour = 0;
-    });
-
-    timer.cancel();
-    _noti.cancelAll();
-
-    m.changeMin(0);
-  }
-
-  void clearTimer(TimerModel m) async {
-    setState(() {
-      _runState = 0;
-      _sec = 0;
-      _hour = 0;
-    });
-
-    m.changeMin(0);
-  }
-
-  void finishTimer() async {
-    setState(() {
-      _runState = 0;
-      _sec = 0;
-      _hour = 0;
-    });
-
-    timer.cancel();
-    _noti.cancelAll();
-  }
-
-  void sendNoti() async {
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-        chanId, chanId, chanId,
-        importance: Importance.Low,
-        visibility: NotificationVisibility.Public,
-        priority: Priority.High);
-
-    var iosPlatformChannelSpecifics =
-        IOSNotificationDetails(sound: 'slow_spring.board.aiff');
-    var platformChannelSpecifics = NotificationDetails(
-        androidPlatformChannelSpecifics, iosPlatformChannelSpecifics);
-
-    await _noti.show(
-      timerNotiId,
-      'task명',
-      'date: $_date, ${getTimerText()}',
-      platformChannelSpecifics,
-      payload: 'Hello Flutter',
-    );
-  }
-
-  void sendEndingNoti() async {}
-
-  String getTimerText() {
-    var s = (_sec % 60).floor();
-    var min = (_sec / 60.0).floor();
-    var m = (min % 60.0).floor();
-    var h = (min / 60.0).floor();
-
-    return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
-  }
-
-  Widget _buildButtonRow(TimerModel timer) {
+  Widget _buildButtonRow(TimerService timer) {
     return Container(
         alignment: Alignment.bottomCenter,
+        margin: EdgeInsets.only(bottom: 30),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
+              heroTag: "start/pause",
               onPressed: () {
-                if (_runState == 1) {
-                  pauseTimer();
-                } else if (_runState == 0) {
-                  startTimer(timer.date);
-                } else if (_runState == 2) {
-                  resumeTimer();
+                if (timer.runState == 1) {
+                  timer.pauseTimer();
+                } else if (timer.runState == 0) {
+                  timer.startTimer("2020-08-08");
+                } else if (timer.runState == 2) {
+                  timer.resumeTimer();
                 }
               },
-              tooltip: _runState == 1 ? 'Stop or Pause' : 'Start',
-              child: _runState == 1
+              tooltip: timer.runState == 1 ? 'Stop or Pause' : 'Start',
+              child: timer.runState == 1
                   ? new Icon(Icons.pause)
                   : new Icon(Icons.play_arrow),
             ),
             FloatingActionButton(
+              heroTag: "reset/stop",
               onPressed: () {
-                if (_runState == 0) {
-                  clearTimer(timer);
+                if (timer.runState == 0) {
+                  timer.clearTimer();
                 } else {
-                  stopTimer(timer);
+                  timer.stopTimer();
                 }
               },
-              tooltip: _runState == 0 ? 'Clear' : 'Stop',
-              child: _runState == 0
+              tooltip: timer.runState == 0 ? 'Clear' : 'Stop',
+              child: timer.runState == 0
                   ? new Icon(Icons.refresh)
                   : new Icon(Icons.stop),
             )
@@ -190,7 +61,7 @@ class _ClockTimerState extends State<ClockTimer> {
   }
 
   _setStartTimer(BuildContext context, DragStartDetails details, double centerX,
-      double centerY) {
+      double centerY, TimerService timer) {
     RenderBox getBox = context.findRenderObject();
     var local = getBox.globalToLocal(details.globalPosition);
     _x = local.dx;
@@ -198,12 +69,12 @@ class _ClockTimerState extends State<ClockTimer> {
 
     int degree = _calcDegree(_x, _y, centerX, centerY);
     setState(() {
-      _sec = _hour * 3600 + degree * 10;
+      timer.setSec(timer.hour * 3600 + degree * 10);
     });
   }
 
   _setUpdateTimer(BuildContext context, DragUpdateDetails details,
-      double centerX, double centerY) {
+      double centerX, double centerY, TimerService timer) {
     _x += details.delta.dx;
     _y += details.delta.dy;
 
@@ -211,12 +82,11 @@ class _ClockTimerState extends State<ClockTimer> {
     _addToDegreeHistory(degree);
 
     int check = _checkTwelve();
-    if (!(check == -1 && _hour == 0)) {
-      _hour += check;
+    if (!(check == -1 && timer.hour == 0)) {
+      timer.addHour(check);
     }
-    setState(() {
-      _sec = _hour * 3600 + degree * 10;
-    });
+
+    timer.setSec(timer.hour * 3600 + degree * 10);
   }
 
   _setEndTimer(BuildContext context, DragEndDetails details) {
@@ -232,7 +102,7 @@ class _ClockTimerState extends State<ClockTimer> {
     // rotate
     theta = theta > 270 ? theta - 270 : theta + 90;
 
-    //theta = (theta / 6).floor() * 6;
+    theta = (theta / 6).floor() * 6;
 
     return theta;
   }
@@ -264,8 +134,8 @@ class _ClockTimerState extends State<ClockTimer> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => TimerModel())],
-      child: Consumer<TimerModel>(builder: (context, timerModel, build) {
+      providers: [ChangeNotifierProvider(create: (context) => EmptyModel())],
+      child: Consumer<TimerService>(builder: (context, timerService, build) {
         double screenWidth = MediaQuery.of(context).size.width;
         double topMargin = 30;
         double centerX = screenWidth / 2;
@@ -275,7 +145,7 @@ class _ClockTimerState extends State<ClockTimer> {
           Align(
             alignment: Alignment.topCenter,
             child: Text(
-              "${getTimerText()}",
+              "${timerService.timeText}",
               style: TextStyle(fontSize: 35),
             ),
           ),
@@ -283,7 +153,7 @@ class _ClockTimerState extends State<ClockTimer> {
             child: Container(
               margin: EdgeInsets.only(top: topMargin),
               child: CustomPaint(
-                painter: TimerPainter(context, _sec),
+                painter: TimerPainter(context, timerService.sec),
                 child: Container(
                   width: screenWidth,
                   height: screenWidth,
@@ -291,22 +161,24 @@ class _ClockTimerState extends State<ClockTimer> {
               ),
             ),
             onPanStart: (details) {
-              if (_runState == 0) {
-                _setStartTimer(context, details, centerX, centerY);
+              if (timerService.runState == 0) {
+                _setStartTimer(
+                    context, details, centerX, centerY, timerService);
               }
             },
             onPanUpdate: (details) {
-              if (_runState == 0) {
-                _setUpdateTimer(context, details, centerX, centerY);
+              if (timerService.runState == 0) {
+                _setUpdateTimer(
+                    context, details, centerX, centerY, timerService);
               }
             },
             onPanEnd: (details) {
-              if (_runState == 0) {
+              if (timerService.runState == 0) {
                 _setEndTimer(context, details);
               }
             },
           ),
-          _buildButtonRow(timerModel),
+          _buildButtonRow(timerService),
         ]);
       }),
     );

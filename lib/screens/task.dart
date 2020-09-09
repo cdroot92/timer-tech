@@ -4,24 +4,40 @@ import 'package:provider/provider.dart';
 
 import '../size_config.dart';
 import '../models/dark_mode.dart';
-import 'components/home_body.dart';
 
-class HomeScreen extends StatefulWidget {
+class TaskScreen extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _TaskScreenState createState() => _TaskScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 1;
+class _TaskScreenState extends State<TaskScreen> {
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
       appBar: buildAppBar(context),
-      body: HomeBody(),
+      body: Center(
+        child: RaisedButton(
+          onPressed: () {},
+          child: Text('Task Screen'),
+        ),
+      ),
       bottomNavigationBar: buildNavBar(context),
     );
+  }
+
+  void _onItemTapped(int index) {
+    if (index != _selectedIndex) {
+      if (index == 0) {
+        Navigator.pushNamed(context, '/task');
+      } else if (index == 1) {
+        Navigator.pushNamed(context, '/');
+      } else if (index == 2) {
+        Navigator.pushNamed(context, '/calendar');
+      }
+    }
   }
 
   AppBar buildAppBar(BuildContext context) {
@@ -50,18 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
         )
       ],
     );
-  }
-
-  void _onItemTapped(int index) {
-    if (index != _selectedIndex) {
-      if (index == 0) {
-        Navigator.pushNamed(context, '/task');
-      } else if (index == 1) {
-        Navigator.pushNamed(context, '/');
-      } else if (index == 2) {
-        Navigator.pushNamed(context, '/calendar');
-      }
-    }
   }
 
   BottomNavigationBar buildNavBar(BuildContext context) {
