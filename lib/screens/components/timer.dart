@@ -28,6 +28,7 @@ class _ClockTimerState extends State<ClockTimer> {
           children: [
             FloatingActionButton(
               heroTag: "start/pause",
+              elevation: 0,
               onPressed: () {
                 if (timer.runState == 1) {
                   timer.pauseTimer();
@@ -44,6 +45,7 @@ class _ClockTimerState extends State<ClockTimer> {
             ),
             FloatingActionButton(
               heroTag: "reset/stop",
+              elevation: 0,
               onPressed: () {
                 if (timer.runState == 0) {
                   timer.clearTimer();
