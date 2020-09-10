@@ -5,39 +5,27 @@ import 'package:provider/provider.dart';
 import '../size_config.dart';
 import '../models/dark_mode.dart';
 
-class CalendarScreen extends StatefulWidget {
+class BaseScreen extends StatefulWidget {
+  final int navIndex;
+  final Widget body;
+
+  BaseScreen({this.navIndex, this.body});
+
   @override
-  _CalendarScreenState createState() => _CalendarScreenState();
+  _BaseScreenState createState() => _BaseScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> {
-  int _selectedIndex = 2;
+class _BaseScreenState extends State<BaseScreen> {
+  int _selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
       appBar: buildAppBar(context),
-      body: Center(
-        child: RaisedButton(
-          onPressed: () {},
-          child: Text('Calendar Screen'),
-        ),
-      ),
+      body: widget.body,
       bottomNavigationBar: buildNavBar(context),
     );
-  }
-
-  void _onItemTapped(int index) {
-    if (index != _selectedIndex) {
-      if (index == 0) {
-        Navigator.pushNamed(context, '/task');
-      } else if (index == 1) {
-        Navigator.pushNamed(context, '/');
-      } else if (index == 2) {
-        Navigator.pushNamed(context, '/calendar');
-      }
-    }
   }
 
   AppBar buildAppBar(BuildContext context) {
@@ -68,6 +56,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  void _onItemTapped(int index) {
+    if (index != widget.navIndex) {
+      if (index == 0) {
+        Navigator.pushNamed(context, '/task');
+      } else if (index == 1) {
+        Navigator.pushNamed(context, '/');
+      } else if (index == 2) {
+        Navigator.pushNamed(context, '/calendar');
+      }
+    }
+  }
+
   BottomNavigationBar buildNavBar(BuildContext context) {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
@@ -84,7 +84,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           title: Text('Calendar'),
         ),
       ],
-      currentIndex: _selectedIndex,
+      currentIndex: widget.navIndex,
       selectedItemColor: Colors.red[500],
       onTap: _onItemTapped,
     );
