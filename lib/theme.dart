@@ -15,6 +15,8 @@ ThemeData themeData(BuildContext context) {
       // on light theme surface = Colors.white by default
     ),
     backgroundColor: Colors.white,
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     iconTheme: IconThemeData(color: kBodyTextColorLight),
     floatingActionButtonTheme:
         FloatingActionButtonThemeData(backgroundColor: kAccentIconLightColor),
@@ -40,6 +42,8 @@ ThemeData darkThemeData(BuildContext context) {
       surface: kSurfaceDarkColor,
     ),
     backgroundColor: kBackgroundDarkColor,
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     iconTheme: IconThemeData(color: kBodyTextColorDark),
     floatingActionButtonTheme:
         FloatingActionButtonThemeData(backgroundColor: kAccentIconDarkColor),

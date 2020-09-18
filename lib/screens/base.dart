@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 import '../size_config.dart';
 import '../models/dark_mode.dart';
+import '../models/timer.dart';
 
 class BaseScreen extends StatefulWidget {
   final int navIndex;
@@ -16,21 +20,42 @@ class BaseScreen extends StatefulWidget {
 }
 
 class _BaseScreenState extends State<BaseScreen> {
-  int _selectedIndex = 1;
+  DateTime _lastTouchBack;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(
-      appBar: buildAppBar(context),
-      body: widget.body,
-      bottomNavigationBar: buildNavBar(context),
+    return Consumer2<DarkModeModel, TimerService>(
+      builder: (context, theme, timer, child) => Scaffold(
+        key: _scaffoldKey,
+        appBar: buildAppBar(context),
+        body: WillPopScope(
+            child: widget.body,
+            onWillPop: () async {
+              if (_lastTouchBack == null ||
+                  DateTime.now().difference(_lastTouchBack).inSeconds > 1) {
+                _scaffoldKey.currentState.showSnackBar(SnackBar(
+                  content: Text('Press again Back Button exit'),
+                  duration: Duration(seconds: 1),
+                ));
+                _lastTouchBack = DateTime.now();
+                return false;
+              } else {
+                timer.stopTimer();
+                SystemNavigator.pop();
+                return true;
+              }
+            }),
+        bottomNavigationBar: buildNavBar(context),
+      ),
     );
   }
 
   AppBar buildAppBar(BuildContext context) {
     return AppBar(
       leading: null,
+      automaticallyImplyLeading: false,
       actions: [
         Consumer<DarkModeModel>(
           builder: (context, theme, child) => GestureDetector(
